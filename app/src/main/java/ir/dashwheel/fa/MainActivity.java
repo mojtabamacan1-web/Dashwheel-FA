@@ -3,6 +3,7 @@ package ir.dashwheel.fa;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Gravity;
+import android.view.DragEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -89,6 +91,7 @@ public class MainActivity extends Activity {
         ScrollView sc=new ScrollView(this); sc.setFillViewport(false); sc.addView(body);
         root.addView(sc,new LinearLayout.LayoutParams(-1,0,1));
         nav=new LinearLayout(this); nav.setOrientation(LinearLayout.HORIZONTAL); nav.setGravity(Gravity.CENTER);
+        body.setOnDragListener((view,event)->{ if(event.getAction()==DragEvent.ACTION_DRAG_STARTED) return event.getClipDescription()!=null; if(event.getAction()==DragEvent.ACTION_DROP){ String id=event.getClipData().getItemAt(0).getText().toString(); int from=order.indexOf(id); if(from>=0){order.remove(from); int to=Math.max(0,Math.min(order.size(),(int)((event.getY()/Math.max(1,view.getHeight()))*order.size()))); order.add(to,id);savePrefs();render();} return true;} return true; });
         String[] tabs={"داشبورد","شخصی‌سازی","پروفایل‌ها","تنظیمات"};
         for(String t:tabs){ Button b=button(t,t.equals(page)?accent:panel,t.equals(page)?Color.BLACK:fg); b.setTextSize(11); LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(44),1);p.setMargins(dp(2),dp(6),dp(2),0);nav.addView(b,p);b.setOnClickListener(v->{page=t;render();});}
         root.addView(nav); setContentView(root);
@@ -164,6 +167,7 @@ public class MainActivity extends Activity {
             Button up=button("↑",panel,fg),down=button("↓",panel,fg);line.addView(up,new LinearLayout.LayoutParams(dp(42),dp(36)));line.addView(down,new LinearLayout.LayoutParams(dp(42),dp(36)));
             up.setOnClickListener(v->{if(at>0){String x=order.remove(at);order.add(at-1,x);savePrefs();render();}});
             down.setOnClickListener(v->{if(at<order.size()-1){String x=order.remove(at);order.add(at+1,x);savePrefs();render();}});
+            line.setOnLongClickListener(v->{ ClipData data=ClipData.newPlainText("widget",id); if(android.os.Build.VERSION.SDK_INT>=24) v.startDragAndDrop(data,new View.DragShadowBuilder(v),null,0); else v.startDrag(data,new View.DragShadowBuilder(v),null,0); return true; });
             LinearLayout.LayoutParams p=full();p.setMargins(0,0,0,dp(4));body.addView(line,p);
         }
     }
