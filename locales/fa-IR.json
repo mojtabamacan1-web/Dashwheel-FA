@@ -1,0 +1,27 @@
+{
+  "locale": "fa-IR",
+  "language": "Persian",
+  "direction": "rtl",
+  "translations": {
+    "Bluetooth": "بلوتوث",
+    "DASHBOARD": "داشبورد",
+    "FUEL": "سوخت",
+    "Device": "دستگاه",
+    "Settings": "تنظیمات",
+    "Navigation": "مسیریابی",
+    "Music": "موسیقی",
+    "Weather": "آب‌وهوا",
+    "Speed": "سرعت",
+    "Distance": "مسافت",
+    "Trip": "سفر",
+    "Home": "خانه",
+    "Search": "جست‌وجو",
+    "Connect": "اتصال",
+    "Disconnect": "قطع اتصال",
+    "Cancel": "لغو",
+    "Save": "ذخیره",
+    "Close": "بستن",
+    "Back": "بازگشت",
+    "Next": "بعدی"
+  }
+}
