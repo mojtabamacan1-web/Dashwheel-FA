@@ -7,6 +7,9 @@ import android.content.ClipData;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -99,12 +102,14 @@ public class MainActivity extends Activity {
     }
 
     private void dashboard() {
-        LinearLayout hero=card(); hero.setGravity(Gravity.CENTER); hero.setPadding(dp(12),dp(12),dp(12),dp(12));
-        hero.addView(txt("سرعت خودرو",13,muted,false));
-        hero.addView(txt("--",54,accent,true));
-        hero.addView(txt("کیلومتر بر ساعت",11,muted,false));
-        hero.addView(txt("برای نمایش سرعت واقعی، اتصال OBD-II لازم است",10,muted,false));
-        body.addView(hero,full());
+        section("داشبورد خودرو","نمای کلی اطلاعات و میانبرهای رانندگی");
+        LinearLayout hero=card();
+        hero.setPadding(dp(8),dp(10),dp(8),dp(8));
+        hero.addView(new GaugeView(),new LinearLayout.LayoutParams(-1,dp(230)));
+        LinearLayout stats=new LinearLayout(this);stats.setOrientation(LinearLayout.HORIZONTAL);
+        String[][] values={{"۲۱۰۰","دور موتور"},{"۹۰°","دمای آب"},{"۴۰٪","سوخت"},{"۳۱۰","برد (کیلومتر)"}};
+        for(String[] v:values){LinearLayout cell=new LinearLayout(this);cell.setGravity(Gravity.CENTER);cell.setOrientation(LinearLayout.VERTICAL);cell.addView(txt(v[0],17,accent,true));cell.addView(txt(v[1],10,muted,false));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(48),1);stats.addView(cell,p);}
+        hero.addView(stats);body.addView(hero,full());
         int count=0; LinearLayout row=null;
         for(String id:order){int i=indexOf(id);if(i<0||!enabled[i])continue;
             if(count%2==0){row=new LinearLayout(this);row.setOrientation(LinearLayout.HORIZONTAL);body.addView(row,full());}
@@ -112,7 +117,29 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(108),1);p.setMargins(dp(3),dp(4),dp(3),dp(4));row.addView(tile,p);count++;
         }
         if(count==0) body.addView(txt("هیچ ویجتی فعال نیست؛ از بخش شخصی‌سازی ویجت اضافه کن.",14,muted,false));
+        TextView note=txt("اطلاعات سرعت، سوخت و دما در این نسخه نمونه هستند و هنوز از ECU خودرو خوانده نمی‌شوند.",10,muted,false);
+        note.setPadding(dp(4),dp(8),dp(4),dp(8));body.addView(note,full());
     }
+
+    private class GaugeView extends View {
+        private final Paint p=new Paint(3);
+        GaugeView(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
+        @Override protected void onDraw(Canvas c){
+            super.onDraw(c);float w=getWidth(),h=getHeight();float cx=w/2f,cy=h*.72f;
+            float radius=Math.min(w*.34f,h*.62f);
+            p.setColor(panel);p.setStyle(Paint.Style.FILL);c.drawRoundRect(new RectF(0,0,w,h),dp(14),dp(14),p);
+            p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(dp(13));p.setStrokeCap(Paint.Cap.ROUND);
+            RectF oval=new RectF(cx-radius,cy-radius,cx+radius,cy+radius);
+            p.setColor(stroke);c.drawArc(oval,135,270,false,p);
+            p.setColor(accent);c.drawArc(oval,135,112,false,p);
+            p.setStrokeWidth(dp(2));p.setColor(muted);
+            for(int i=0;i<=22;i++){double a=Math.toRadians(135+i*(270.0/22));float r1=radius-dp(13),r2=radius-(i%2==0?dp(27):dp(21));c.drawLine(cx+(float)Math.cos(a)*r1,cy+(float)Math.sin(a)*r1,cx+(float)Math.cos(a)*r2,cy+(float)Math.sin(a)*r2,p);}
+            p.setStyle(Paint.Style.FILL);p.setColor(fg);p.setTextAlign(Paint.Align.CENTER);p.setTypeface(Typeface.create(Typeface.DEFAULT,Typeface.BOLD));p.setTextSize(dp(48));c.drawText("--",cx,cy+dp(9),p);
+            p.setTextSize(dp(12));p.setColor(muted);c.drawText("کیلومتر بر ساعت",cx,cy+dp(31),p);
+            p.setTextSize(dp(11));p.setColor(accent);c.drawText("DASHWHEEL  •  فارسی",cx,dp(24),p);
+        }
+    }
+
     private LinearLayout widgetCard(String id) {
         int i=indexOf(id); String title=widgetTitles[i]; String symbol="◈", detail="آماده";
         switch(id){
